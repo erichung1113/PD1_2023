@@ -4,9 +4,9 @@
 # -lm
 
 # change here
+HW=2
 ToDo="A B C D"
 Score=(30 10 30 30)
-HW=2
 # -----------
 
 if test -d ~/Homework/testcase ; then rm -r ~/Homework/testcase; fi 
