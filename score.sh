@@ -4,7 +4,7 @@
 HW=2
 ProblemID="A B C D"
 Score=(30 10 30 30)
-# -----------
+# -------------
 
 if test -d ~/Homework/testcase ; then rm -r ~/Homework/testcase; fi 
 mkdir ~/Homework/testcase
