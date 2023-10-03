@@ -55,7 +55,7 @@ for student_id in $students_id; do
             if (( $AC == $tcNum )); then
                 (( score += ${Score[(( $(printf "%d" "'$p") - 65 ))]} ))
             	echo -n ", p$p:${Score[(( $(printf "%d" "'$p") - 65 ))]}" 
-			else
+            else
                 echo "$student_id,$p" >> $WA_file
             	echo -n ", p$p: 0"
             fi
