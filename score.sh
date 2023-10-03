@@ -15,7 +15,7 @@ WA_file="HW${HW}_wa.txt"
 
 students_id=$(cat ~/students_id.txt)
 if (( $# != 0 )); then
-	students_id=$@
+    students_id=$@
 fi
 
 echo "id,score" > $score_file
