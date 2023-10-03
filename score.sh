@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# change here
+# Configuration
 HW=2
 ProblemID="A B C D"
 Score=(30 10 30 30)
