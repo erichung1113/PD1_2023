@@ -1,9 +1,9 @@
 #! /bin/bash
 
-# change here
+# Configuration
 HW=2
 ToDo="A B C D"
-#------------
+# -------------
 
 if (( $# != 0 )); then
     ToDo=$@
@@ -21,11 +21,11 @@ mkdir ~/HW$HW/testcase
 cp -r /share/HW$HW/* ~/HW$HW/testcase
 
 for p in $ToDo; do
-    echo -e "${YELLOW}Testing p$p...${RESET}\n-----------------------------"
+    echo -e "${YELLOW}Testing p$p.c ...${RESET}\n-----------------------------"
 
     if ! test -d ~/HW$HW/your_answer/p$p ; then mkdir ~/HW$HW/your_answer/p$p; fi
     if test -f ~/HW$HW/$p ; then rm ~/HW$HW/$p; fi 
-    gcc ~/HW$HW/p$p.c -o ~/HW$HW/$p -lm
+    gcc ~/HW$HW/p$p.c -o ~/HW$HW/$p
 
     for tc_name in $(ls ~/HW$HW/testcase/p$p | grep 'in$' | sed 's/.in//'); do
         input=~/HW$HW/testcase/p$p/$tc_name.in
