@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Configuration
-HW=2
+HW=3
 ToDo="A B C D"
 # -------------
 
@@ -25,7 +25,8 @@ for p in $ToDo; do
 
     if ! test -d ~/HW$HW/your_answer/p$p ; then mkdir ~/HW$HW/your_answer/p$p; fi
     if test -f ~/HW$HW/$p ; then rm ~/HW$HW/$p; fi 
-    gcc ~/HW$HW/p$p.c -o ~/HW$HW/$p
+    g++ ~/HW$HW/p$p.c -o ~/HW$HW/$p
+	if (( $? != 0 )); then continue; fi
 
     for tc_name in $(ls ~/HW$HW/testcase/p$p | grep 'in$' | sed 's/.in//'); do
         input=~/HW$HW/testcase/p$p/$tc_name.in
