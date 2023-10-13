@@ -1,8 +1,8 @@
 #! /bin/bash
 
 # Configuration
-HW=3
-ToDo="A B C D"
+HW=4
+ToDo="A B"
 # -------------
 
 if (( $# != 0 )); then
@@ -25,7 +25,7 @@ for p in $ToDo; do
 
     if ! test -d ~/HW$HW/your_answer/p$p ; then mkdir ~/HW$HW/your_answer/p$p; fi
     if test -f ~/HW$HW/$p ; then rm ~/HW$HW/$p; fi 
-    g++ ~/HW$HW/p$p.c -o ~/HW$HW/$p
+    gcc ~/HW$HW/p$p.c -o ~/HW$HW/$p
 	if (( $? != 0 )); then 
 		echo -e "${YELLOW}Compilation Error${RESET}"
   		echo "-----------------------------"
@@ -44,15 +44,31 @@ for p in $ToDo; do
 				echo -e "${BLUE}Time Limit Exceed${RESET}"
 			else
 				echo -e "${YELLOW}Runtime Error${RESET}"
-				echo $ExecResult		
+				echo $ExecResult
    			fi
 		else
-	        diff $result $answer >> /dev/null
-	        if (( $? != 0 )); then
+	        # diff $result $answer >> /dev/null
+            /usr/local/bin/hw4_tester $p $result $answer
+	        if (( $? == 0 )); then
 	            echo -e "${RED}WA${RESET}"
-	            echo "Input   Data   : $(cat $input)" 
-	            echo "Your    Answer : $(cat $result)" 
-	            echo "Correct Answer : $(cat $answer)" 
+                if (( $( wc -l < $input) + 1 > 1));then
+                    echo -e "Input   Data   : \n$(cat $input)"
+	            else
+                    echo "Input   Data   : $(cat $input)" 
+	            fi
+
+                if (( $( wc -l < $result) + 1 > 1));then
+                    echo -e "Your    Answer : \n$(cat $result)"
+	            else
+                    echo "Your    Answer : $(cat $result)" 
+	            fi
+                
+                if (( $( wc -l < $answer) + 1 > 1));then
+                    echo -e "Correct Answer : \n$(cat $answer)"
+	            else
+                    echo "Correct Answer : $(cat $answer)" 
+	            fi
+	            
 	        else
 	            echo -e "${GREEN}AC${RESET}"
 	        fi
