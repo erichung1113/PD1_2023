@@ -29,7 +29,7 @@ for p in $ToDo; do
 	if (( $? != 0 )); then 
 		echo -e "${YELLOW}Compilation Error${RESET}"
   		echo "-----------------------------"
-		continue; 
+		continue
 	fi
 
     for tc_name in $(ls ~/HW$HW/testcase/p$p | grep 'in$' | sed 's/.in//'); do
