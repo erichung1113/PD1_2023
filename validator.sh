@@ -5,21 +5,21 @@ HW=4
 ToDo="A B"
 # -------------
 
-FilePath=~/HW$HW
-
-if (( $# != 0 )); then
-    if [[ $1 =~ /* ]]; then
-        FilePath=$1
-    else
-        ToDo=$@
-    fi
-fi
-
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 RESET='\033[0m'
+
+if [[ $(basename $(pwd)) = "HW$HW" ]]; then
+    FilePath=$(pwd)
+else
+    FilePath=~/HW$HW
+fi
+
+if (( $# != 0 )); then
+    ToDo=$@
+fi
 
 if ! test -d $FilePath/your_answer ; then mkdir $FilePath/your_answer; fi
 if test -d $FilePath/testcase ; then rm -r $FilePath/testcase; fi 
