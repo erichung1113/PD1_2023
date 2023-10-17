@@ -13,6 +13,7 @@ RESET='\033[0m'
 
 if [[ $(basename $(pwd)) = "HW$HW" ]]; then
     FilePath=$(pwd)
+	echo "=> Using path : $FilePath"
 else
     FilePath=~/HW$HW
 fi
@@ -24,7 +25,7 @@ fi
 if ! test -d $FilePath/your_answer ; then mkdir $FilePath/your_answer; fi
 if test -d $FilePath/testcase ; then rm -r $FilePath/testcase; fi 
 mkdir $FilePath/testcase
-cp -r /share/HW$HW/* $FilePath/testcase
+cp -r /share/HW${HW}_TestCase/* $FilePath/testcase
 
 for p in $ToDo; do
     echo -e "${YELLOW}Testing p$p.c ...${RESET}\n-----------------------------"
