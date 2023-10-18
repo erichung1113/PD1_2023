@@ -16,11 +16,19 @@ if [[ $(basename $(pwd)) = "HW$HW" ]]; then
 else
     FilePath=~/HW$HW
 fi
-echo "=> Using path : $FilePath"
 
-if (( $# != 0 )); then
-    ToDo=$@
-fi
+while (( $# != 0 )); do
+    if [[ $1 = "-p" ]]; then
+        shift 1
+        FilePath=$1
+    else
+        todo="$todo $1"
+    fi
+    shift 1
+done
+if [[ $todo != "" ]]; then ToDo=$todo; fi
+
+echo "=> Using path : $FilePath"
 
 if ! test -d $FilePath/your_answer ; then mkdir $FilePath/your_answer; fi
 if test -d $FilePath/testcase ; then rm -r $FilePath/testcase; fi 
@@ -48,7 +56,7 @@ for p in $ToDo; do
         echo -n "$tc_name : "
         ExecResult=$(timeout 1 bash -c "$FilePath/$p < $input > $result" 2>&1)
         ExecReturnValue=$?
-        if (( $ExecReturnValue != 0 )); then 
+        if (( $ExecReturnValue != 0 )); then
             if (( $ExecReturnValue == 124 )); then
                 echo -e "${BLUE}Time Limit Exceed${RESET}"
             else
