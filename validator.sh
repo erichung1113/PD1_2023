@@ -13,10 +13,10 @@ RESET='\033[0m'
 
 if [[ $(basename $(pwd)) = "HW$HW" ]]; then
     FilePath=$(pwd)
-	echo "=> Using path : $FilePath"
 else
     FilePath=~/HW$HW
 fi
+echo "=> Using path : $FilePath"
 
 if (( $# != 0 )); then
     ToDo=$@
@@ -27,6 +27,7 @@ if test -d $FilePath/testcase ; then rm -r $FilePath/testcase; fi
 mkdir $FilePath/testcase
 cp -r /share/HW${HW}_TestCase/* $FilePath/testcase
 
+All_Pass=1
 for p in $ToDo; do
     echo -e "${YELLOW}Testing p$p.c ...${RESET}\n-----------------------------"
 
@@ -36,6 +37,7 @@ for p in $ToDo; do
     if (( $? != 0 )); then 
         echo -e "${YELLOW}Compilation Error${RESET}"
         echo "-----------------------------"
+        All_Pass=0
         continue; 
     fi
 
@@ -53,15 +55,17 @@ for p in $ToDo; do
                 echo -e "${YELLOW}Runtime Error${RESET}"
                 echo $ExecResult
             fi
+            All_Pass=0
         else
             # diff $result $answer >> /dev/null
             /usr/local/bin/hw4_tester $p $result $answer
             if (( $? == 0 )); then
                 echo -e "${RED}WA${RESET}"
-	    	echo -e "${BLUE}Input   Data${RESET}   : \n$(cat $input)"
-	    	echo -e "${BLUE}Your    Answer${RESET} : \n$(cat $result)"
-	    	echo -e "${BLUE}Correct Answer${RESET} : \n$(cat $answer)"
-            echo -e "${YELLOW}Note: You can use the following command to compare your code's output with the TA's answer :${RESET}\ndiff ~/HW$HW/your_answer/p$p/$tc_name.out ~/HW$HW/testcase/p$p/$tc_name.out" 
+                echo -e "${BLUE}Input   Data${RESET}   : \n$(cat $input)"
+                echo -e "${BLUE}Your    Answer${RESET} : \n$(cat $result)"
+                echo -e "${BLUE}Correct Answer${RESET} : \n$(cat $answer)"
+                echo -e "${YELLOW}Note: You can use the following command to compare your code's output with the TA's answer :${RESET}\ndiff ~/HW$HW/your_answer/p$p/$tc_name.out ~/HW$HW/testcase/p$p/$tc_name.out" 
+                All_Pass=0
             else    
                 echo -e "${GREEN}AC${RESET}"
             fi
@@ -69,3 +73,4 @@ for p in $ToDo; do
         echo "-----------------------------"
     done
 done
+exit $All_Pass
