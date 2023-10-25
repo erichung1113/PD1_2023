@@ -23,4 +23,4 @@ for student_id in $students_id; do
     echo "$student_id,$score"
     (( All++ ))
 done
-echo -n "Pass Rate : $(echo -e "scale=2; $Pass/$All*100" | bc)%"
+echo "Pass rate : $(echo -e "scale=2; $Pass/$All*100" | bc)%"
