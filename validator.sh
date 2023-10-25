@@ -2,7 +2,8 @@
 
 # Configuration
 HW=4
-ToDo="A B"
+ProblemID="A B"
+Score=(50 50)
 # -------------
 
 RED='\033[0;31m'
@@ -26,7 +27,7 @@ while (( $# != 0 )); do
     fi
     shift 1
 done
-if [[ $todo != "" ]]; then ToDo=$todo; fi
+if [[ $todo != "" ]]; then ProblemID=$todo; fi
 
 echo "=> Using path : $FilePath"
 
@@ -35,8 +36,8 @@ if test -d $FilePath/testcase ; then rm -r $FilePath/testcase; fi
 mkdir $FilePath/testcase
 cp -r /share/HW${HW}_TestCase/* $FilePath/testcase
 
-All_Pass=1
-for p in $ToDo; do
+score=0
+for p in $ProblemID; do
     echo -e "${YELLOW}Testing p$p.c ...${RESET}\n-----------------------------"
 
     if ! test -d $FilePath/your_answer/p$p ; then mkdir $FilePath/your_answer/p$p; fi
@@ -45,10 +46,9 @@ for p in $ToDo; do
     if (( $? != 0 )); then 
         echo -e "${YELLOW}Compilation Error${RESET}"
         echo "-----------------------------"
-        All_Pass=0
         continue; 
     fi
-
+    Pass_TC_Cnt=0
     for tc_name in $(ls $FilePath/testcase/p$p | grep 'in$' | sed 's/.in//'); do
         input=$FilePath/testcase/p$p/$tc_name.in
         answer=$FilePath/testcase/p$p/$tc_name.out
@@ -63,22 +63,26 @@ for p in $ToDo; do
                 echo -e "${YELLOW}Runtime Error${RESET}"
                 echo $ExecResult
             fi
-            All_Pass=0
         else
-            # diff $result $answer >> /dev/null
-            /usr/local/bin/hw4_tester $p $result $answer
-            if (( $? == 0 )); then
+            diff $result $answer >> /dev/null
+            if (( $? != 0 )); then
                 echo -e "${RED}WA${RESET}"
                 echo -e "${BLUE}Input   Data${RESET}   : \n$(cat $input)"
                 echo -e "${BLUE}Your    Answer${RESET} : \n$(cat $result)"
                 echo -e "${BLUE}Correct Answer${RESET} : \n$(cat $answer)"
                 echo -e "${YELLOW}Note: You can use the following command to compare your code's output with the TA's answer :${RESET}\ndiff ~/HW$HW/your_answer/p$p/$tc_name.out ~/HW$HW/testcase/p$p/$tc_name.out" 
-                All_Pass=0
-            else    
+            else
                 echo -e "${GREEN}AC${RESET}"
+                (( Pass_TC_Cnt++ ))
             fi
         fi
         echo "-----------------------------"
     done
+
+    TC_Cnt=$(ls $FilePath/testcase/p$p | grep 'in$' | wc -l)
+    if (( $Pass_TC_Cnt == $TC_Cnt )); then
+        (( score += ${Score[(( $(printf "%d" "'$p") - 65 ))]} ))
+    fi
 done
-exit $All_Pass
+echo -e "\nTotal Score : $score/100"
+exit $score
