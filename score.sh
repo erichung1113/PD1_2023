@@ -4,17 +4,18 @@
 HW=5
 # -------------
 
-score_file="HW${HW}_Score.txt"
-
-students_id=$(cat ~/students_id.txt)
+mkdir /home/cial1/Homework
+score_file="/home/cial1/Homework/HW${HW}_Score.txt"
+students_id=$(cat /home/cial1/students_id.txt)
 if (( $# != 0 )); then students_id=$@; fi
-
 echo "id,score" > $score_file
 
 Pass=0
 All=0
 for student_id in $students_id; do
-    hw$HW -p $(pwd)/$student_id/HW$HW > /dev/null 2>&1
+    mkdir /home/cial1/Homework/$student_id
+    cp -r /home/cial1/Submission_BackUp/$(date '+%Y.%m.%d')/$student_id/HW${HW} /home/cial1/Homework/$student_id
+    hw$HW -p /home/cial1/Homework/$student_id/HW$HW > /dev/null 2>&1
     score=$?
     if (( $score == 100 )); then
         (( Pass++ ))
