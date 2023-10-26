@@ -20,8 +20,9 @@ for student_id in $students_id; do
     if (( $score == 100 )); then
         (( Pass++ ))
     fi
-    echo "$student_id, $score" >> $score_file
-    echo "$student_id, $score"
+    echo "$student_id,$score" >> $score_file
+    echo "$student_id,$score"
     (( All++ ))
 done
 echo "Pass rate : $(echo -e "scale=2; $Pass/$All*100" | bc)%"
+chown -R cial1:cial1 /home/cial1/Homework
