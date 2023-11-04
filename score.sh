@@ -1,28 +1,26 @@
 #! /bin/bash
 
 # Configuration
-HW=5
+HW=6
 # -------------
 
-mkdir /home/cial1/Homework
-score_file="/home/cial1/Homework/HW${HW}_Score.txt"
-students_id=$(cat /home/cial1/students_id.txt)
-if (( $# != 0 )); then students_id=$@; fi
+if test -d ~/Homework; then rm -r ~/Homework; fi 
+mkdir ~/Homework
+
+score_file=~/Homework/HW${HW}_Score
 echo "id,score" > $score_file
 
-Pass=0
-All=0
+students_id=$(cat ~/students_id.txt)
+if (( $# != 0 )); then students_id=$@; fi
+
 for student_id in $students_id; do
-    mkdir /home/cial1/Homework/$student_id
-    cp -r /home/cial1/Submission_BackUp/$(date '+%Y.%m.%d')/$student_id/HW${HW} /home/cial1/Homework/$student_id
-    hw$HW -p /home/cial1/Homework/$student_id/HW$HW > /dev/null 2>&1
-    score=$?
-    if (( $score == 100 )); then
-        (( Pass++ ))
-    fi
-    echo "$student_id,$score" >> $score_file
-    echo "$student_id,$score"
-    (( All++ ))
+    mkdir ~/Homework/$student_id
+    cp ~/Submission_BackUp/$student_id/HW${HW}/hw${HW}.c ~/Homework/$student_id
+    # echo "hw$HW -p ~/Homework/$student_id"
+    hw$HW -p ~/Homework/$student_id > /dev/null 2>&1
+	score=$?
+    echo "$student_id, $score" >> $score_file
+    echo "$student_id, $score"
 done
-echo "Pass rate : $(echo -e "scale=2; $Pass/$All*100" | bc)%"
-chown -R cial1:cial1 /home/cial1/Homework
+
+if (( $# == 0 )); then ~/Moss/moss.sh; fi
