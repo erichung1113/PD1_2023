@@ -1,9 +1,9 @@
 #! /bin/bash
 
 # Configuration
-HW=4
-ProblemID="A B"
-Score=(50 50)
+HW=11
+ProblemID="1"
+Score=(500)
 # -------------
 
 RED='\033[0;31m'
@@ -12,7 +12,7 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 RESET='\033[0m'
 
-if [[ $(basename $(pwd)) = "HW$HW" ]]; then
+if [[ $(basename $(pwd)) = "HW$HW" ]] && [[ $(pwd) != /share* ]]; then
     FilePath=$(pwd)
 else
     FilePath=~/HW$HW
@@ -31,58 +31,57 @@ if [[ $todo != "" ]]; then ProblemID=$todo; fi
 
 echo "=> Using path : $FilePath"
 
-if ! test -d $FilePath/your_answer ; then mkdir $FilePath/your_answer; fi
-if test -d $FilePath/testcase ; then rm -r $FilePath/testcase; fi 
-mkdir $FilePath/testcase
-cp -r /share/HW${HW}_TestCase/* $FilePath/testcase
-
 score=0
 for p in $ProblemID; do
-    echo -e "${YELLOW}Testing p$p.c ...${RESET}\n-----------------------------"
+    echo -e "${YELLOW}Testing Subtask $p ...${RESET}\n-----------------------------"
 
-    if ! test -d $FilePath/your_answer/p$p ; then mkdir $FilePath/your_answer/p$p; fi
-    if test -f $FilePath/$p ; then rm $FilePath/$p; fi 
-    gcc $FilePath/p$p.c -o $FilePath/$p
+    if test -f $FilePath/hw${HW} ; then rm $FilePath/hw${HW}; fi 
+    gcc $FilePath/hw${HW}.c -o $FilePath/hw${HW}
+    # g++ --std=c++20 $FilePath/hw${HW}.cpp -o $FilePath/hw${HW}
     if (( $? != 0 )); then 
         echo -e "${YELLOW}Compilation Error${RESET}"
         echo "-----------------------------"
         continue; 
     fi
-    Pass_TC_Cnt=0
-    for tc_name in $(ls $FilePath/testcase/p$p | grep 'in$' | sed 's/.in//'); do
-        input=$FilePath/testcase/p$p/$tc_name.in
-        answer=$FilePath/testcase/p$p/$tc_name.out
-        result=$FilePath/your_answer/p$p/$tc_name.out
-        echo -n "$tc_name : "
-        ExecResult=$(timeout 1 bash -c "$FilePath/$p < $input > $result" 2>&1)
-        ExecReturnValue=$?
-        if (( $ExecReturnValue != 0 )); then
-            if (( $ExecReturnValue == 124 )); then
-                echo -e "${BLUE}Time Limit Exceed${RESET}"
-            else
-                echo -e "${YELLOW}Runtime Error${RESET}"
-                echo $ExecResult
-            fi
+    
+    # input=$FilePath/testcase/p$p/$tc_name.in
+    answer=/share/HW11/correct_answer
+    usrans=$FilePath/your_answer
+    if test -f $usrans; then rm $usrans; fi
+    ExecResult=$(timeout 1 bash -c "$FilePath/hw${HW} /share/HW11/routing_table.txt /share/HW11/inserted_prefixes.txt /share/HW11/delete_prefixes.txt /share/HW11/trace_file.txt 8 > $usrans" 2>&1)
+    ExecReturnValue=$?
+    if (( $ExecReturnValue != 0 )); then
+        if (( $ExecReturnValue == 124 )); then
+            echo -e "${BLUE}Time Limit Exceed${RESET}"
         else
-            diff $result $answer >> /dev/null
-            if (( $? != 0 )); then
-                echo -e "${RED}WA${RESET}"
-                echo -e "${BLUE}Input   Data${RESET}   : \n$(cat $input)"
-                echo -e "${BLUE}Your    Answer${RESET} : \n$(cat $result)"
-                echo -e "${BLUE}Correct Answer${RESET} : \n$(cat $answer)"
-                echo -e "${YELLOW}Note: You can use the following command to compare your code's output with the TA's answer :${RESET}\ndiff ~/HW$HW/your_answer/p$p/$tc_name.out ~/HW$HW/testcase/p$p/$tc_name.out" 
-            else
-                echo -e "${GREEN}AC${RESET}"
-                (( Pass_TC_Cnt++ ))
-            fi
+            echo -e "${YELLOW}Runtime Error${RESET}"
+            echo $ExecResult
         fi
-        echo "-----------------------------"
-    done
-
-    TC_Cnt=$(ls $FilePath/testcase/p$p | grep 'in$' | wc -l)
-    if (( $Pass_TC_Cnt == $TC_Cnt )); then
-        (( score += ${Score[(( $(printf "%d" "'$p") - 65 ))]} ))
+    else
+        diff $usrans $answer > /dev/null 
+        if (( $? == 1 )); then
+            echo -e "${RED}Wrong Answer${RESET}"
+            echo -e -n "\n${BLUE}Your    Answer${RESET} : \n$(cat $usrans | head -c 500)"
+            if (( $(cat $usrans | wc -m) > 500)) ; then
+                echo "....(more)"
+            else
+                echo ""
+            fi
+            echo -e -n "\n${BLUE}Correct Answer${RESET} : \n$(cat $answer | head -c 500)"
+            if (( $(cat $answer | wc -m) > 500)) ; then
+                echo "....(more)"
+            else
+                echo ""
+            fi
+            echo -e "\ndiff $usrans $answer"
+            
+        else
+            echo -e "${GREEN}ACCEPT${RESET}"
+            score=50
+        fi
     fi
+    echo "-----------------------------"
+
 done
-echo -e "\nTotal Score : $score/100"
+echo -e "\nTotal Score : $score/50"
 exit $score
