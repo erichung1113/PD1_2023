@@ -10,7 +10,7 @@ mkdir ~/Homework
 score_file=~/Homework/HW${HW}_Score
 echo "id,score" > $score_file
 
-students_id=$(cat ~/students_id.txt)
+students_id=$(cat ~/all_students_id.txt)
 if (( $# != 0 )); then students_id=$@; fi
 
 for student_id in $students_id; do
