@@ -1,0 +1,210 @@
+#! /bin/bash
+
+# Configuration
+HW=6
+Subtask="1 2 3 4"
+Score=(15 15 15 15)
+# -------------
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;36m'
+RESET='\033[0m'
+
+if [[ $(basename $(pwd)) = "HW$HW" ]]; then
+    FilePath=$(pwd)
+else
+    FilePath=~/HW$HW
+fi
+
+
+while (( $# != 0 )); do
+    if [[ $1 = "-p" ]]; then
+        shift 1
+        FilePath=$1
+    else
+        todo="$todo $1"
+    fi
+    shift 1
+done
+if [[ $todo != "" ]]; then Subtask=$todo; fi
+
+# copy testcase
+if test -d $FilePath/testcase ; then rm -r $FilePath/testcase; fi
+if test -d $FilePath/your_answer ; then rm -r $FilePath/your_answer; fi
+mkdir $FilePath/testcase $FilePath/your_answer
+cp -r /share/HW${HW}_TestCase/* $FilePath/testcase
+
+score=0
+
+echo -e "=> Using Path : $FilePath/hw6.c"
+
+if test -f $FilePath/hw6 ; then rm $FilePath/hw6; fi
+gcc $FilePath/hw6.c -o $FilePath/hw6
+if (( $? != 0 )); then
+    if ! test -f $FilePath/hw6.c; then
+        echo -e "${RED}File $FilePath/hw6.c not found.${RESET}"
+    else
+        echo -e "${YELLOW}Compilation Error${RESET}"
+    fi
+    echo "-----------------------------"
+else
+    for opt in $Subtask; do
+        echo -e "${YELLOW}Testing Subtask $opt ...${RESET}\n-----------------------------"
+
+        mkdir $FilePath/your_answer/Subtask$opt
+
+        Pass_TC_Cnt=0
+        for tc_name in $(ls $FilePath/testcase/Subtask$opt | grep 'in$' | sed 's/.in//'); do
+            input=$FilePath/testcase/Subtask$opt/$tc_name.in
+            answer=$FilePath/testcase/Subtask$opt/$tc_name.out
+            result=$FilePath/your_answer/Subtask$opt/$tc_name.out
+            echo -n "$tc_name : "
+            ExecResult=$(timeout 1 bash -c "$FilePath/hw6 < $input > $result" 2>&1)
+            ExecReturnValue=$?
+            if (( $ExecReturnValue != 0 )); then
+                if (( $ExecReturnValue == 124 )); then
+                    echo -e "${BLUE}Time Limit Exceed${RESET}"
+                else
+                    echo -e "${RED}Runtime Error${RESET}"
+                    echo $ExecResult
+                fi      
+                rm $result
+            else
+                diff $result $answer >> /dev/null
+                if (( $? != 0 )); then
+                    echo -e "${RED}Wrong Answer${RESET}"
+                    echo -e -n "${BLUE}Input   Data${RESET} : \n$(cat $input | head -c 100)"
+                    if (( $(cat $input | wc -m) > 100)) ; then
+                        echo "....(more)"
+                    else
+                        echo ""
+                    fi
+                    echo -e -n "\n${BLUE}Your    Answer${RESET} : \n$(cat $result | head -c 100)"
+                    if (( $(cat $result | wc -m) > 100)) ; then
+                        echo "....(more)"
+                    else
+                        echo ""
+                    fi
+                    echo -e -n "\n${BLUE}Correct Answer${RESET} : \n$(cat $answer | head -c 100)"
+                    if (( $(cat $answer | wc -m) > 100)) ; then
+                        echo "....(more)"
+                    else
+                        echo ""
+                    fi
+                    echo -e "\n${YELLOW}Note: You can use the following command to compare your code's output with TA's answer :${RESET}\ndiff $result $answer"
+                else
+                    echo -e "${GREEN}ACCEPT${RESET}"
+                    (( Pass_TC_Cnt++ ))
+                fi
+            fi
+            echo "-----------------------------"
+        done
+
+        TC_Cnt=$(ls $FilePath/testcase/Subtask$opt | grep 'in$' | wc -l)
+        if (( $Pass_TC_Cnt == $TC_Cnt )); then
+            (( score += ${Score[(( $(printf "%d" "'$opt") - 49 ))]} ))
+        fi
+    done
+fi
+
+
+echo -e "\n=> Using Path : $FilePath/hw6_random.c"
+
+if test -f $FilePath/hw6_random ; then rm $FilePath/hw6_random; fi
+gcc $FilePath/hw6_random.c -o $FilePath/hw6_random
+if (( $? != 0 )); then
+    if ! test -f $FilePath/hw6_random.c; then
+        echo -e "${RED}File $FilePath/hw6_random.c not found.${RESET}"
+    else
+        echo -e "${YELLOW}Compilation Error${RESET}"
+    fi
+    echo "-----------------------------"
+else
+    Pass_Subtask=0
+    for opt in $Subtask; do
+        echo -e "${YELLOW}Testing Subtask ${opt} (Random) ...${RESET}\n-----------------------------"
+
+        mkdir $FilePath/your_answer/Subtask${opt}_Random
+
+        Fail=false
+        for i in $(seq 1 2); do
+            if (( i > 1 )) ; then sleep 1; fi
+
+            input=$FilePath/testcase/Subtask${opt}_Random/input.in
+            result=$FilePath/your_answer/Subtask${opt}_Random/random_${i}.out
+            answer=$FilePath/your_answer/Subtask${opt}_Random/random_${i}.ans
+            ExecResult=$(timeout 1 bash -c "$FilePath/hw6_random < $input > $result" 2>&1)
+            ExecReturnValue=$?
+            if (( $ExecReturnValue != 0 )); then
+                if (( $ExecReturnValue == 124 )); then
+                    echo -e "${BLUE}Time Limit Exceed${RESET}"
+                else
+                    echo -e "${RED}Runtime Error${RESET}"
+                    echo $ExecResult
+                fi
+                rm $result
+		Fail=true; break
+            else
+                check_result=$(/usr/local/bin/hw6_check_range $opt $result)
+                if (( $? != 0 )); then
+                    echo -e "${RED}$check_result${RESET}"
+                    echo -e -n "${BLUE}Your Random Output${RESET} : \n$(cat $result | head -c 100)"
+                    if (( $(cat $result | wc -m) > 100)) ; then
+                        echo "....(more)"
+                    else
+                        echo ""
+                    fi
+                    echo -e "${YELLOW}\nOutput file location :${RESET}\n$result"
+                    Fail=true; break
+                fi
+                /usr/local/bin/hw6_generate_answer $opt $result > $answer
+                diff $result $answer >> /dev/null
+                if (( $? != 0 )); then
+                    echo -e "${RED}Wrong Answer${RESET}"
+                    echo -e -n "${BLUE}Input   Data${RESET} : \n$(cat $input | head -c 100)"
+                    if (( $(cat $input | wc -m) > 100)) ; then
+                        echo "....(more)"
+                    else
+                        echo ""
+					fi
+                    echo -e -n "\n${BLUE}Your    Answer${RESET} : \n$(cat $result | head -c 100)"
+                    if (( $(cat $result | wc -m) > 100)) ; then
+                        echo "....(more)"
+                    else
+                        echo ""
+					fi
+                    echo -e -n "\n${BLUE}Correct Answer${RESET} : \n$(cat $answer | head -c 100)"
+                    if (( $(cat $answer | wc -m) > 100)) ; then
+                        echo "....(more)"
+                    else
+                        echo ""
+					fi
+                    echo -e "\n${YELLOW}Note: You can use the following command to compare your code's output with TA's answer :${RESET}\ndiff $result $answer"
+                    Fail=true; break
+                fi
+            fi
+            if (( Fail )); then break; fi
+        done
+        if ! $Fail ; then
+            result1=$FilePath/your_answer/Subtask${opt}_Random/random_1.out
+            result2=$FilePath/your_answer/Subtask${opt}_Random/random_2.out
+            
+            diff $result1 $result2 >> /dev/null
+            if (( $? == 0 )); then
+                echo -e "${RED}Your input data is not random.${RESET}"
+            else
+                echo -e "${GREEN}ACCEPT${RESET}"
+                (( Pass_Subtask++ ))
+            fi
+        fi
+        echo "-----------------------------"
+    done
+    if (( Pass_Subtask == 4 )); then
+        (( score += 40 ))
+    fi
+fi
+
+echo -e "\nTotal Score : $score/100"
+exit $score

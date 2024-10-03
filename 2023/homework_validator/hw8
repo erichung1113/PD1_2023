@@ -1,0 +1,116 @@
+HW=8
+Subtask="1 2"
+Score=(50 50)
+# -------------
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;36m'
+ORANGE='\033[40m'
+RESET='\033[0m'
+
+
+if [[ $(basename $(pwd)) = "HW${HW}" ]]; then
+    FilePath=$(pwd)
+else
+    FilePath=~/HW${HW}
+fi
+
+while (( $# != 0 )); do
+    if [[ $1 = "-p" ]]; then
+        shift 1
+        FilePath=$1
+    else
+        todo="$todo $1"
+    fi
+    shift 1
+done
+if [[ $todo != "" ]]; then Subtask=$todo; fi
+
+# copy testcase
+if test -d $FilePath/testcase ; then rm -r $FilePath/testcase; fi
+if test -d $FilePath/your_answer ; then rm -r $FilePath/your_answer; fi
+mkdir $FilePath/testcase $FilePath/your_answer
+cp -r /share/HW${HW}_TestCase/* $FilePath/testcase
+
+score=0
+
+echo -e "=> Using Path : $FilePath"
+
+
+for subtask in $Subtask; do
+    echo -e "${YELLOW}Testing Subtask ${subtask} ...${RESET}\n-----------------------------"
+
+    cp /share/HW8_TestCase/main${subtask}.c ${FilePath}
+    if test -f $FilePath/hw${HW}-${subtask} ; then rm $FilePath/hw${HW}-${subtask}; fi
+    gcc -o $FilePath/hw${HW}-${subtask} $FilePath/main${subtask}.c $FilePath/hw${HW}-${subtask}.c
+    if (( $? != 0 )); then
+        if ! test -f $FilePath/hw${HW}-${subtask}.c; then
+            echo -e "${RED}File hw${HW}-${subtask}.c not found.${RESET}"
+        else
+            echo -e "${YELLOW}Compilation Error${RESET}"
+        fi
+        echo "-----------------------------"
+    else
+        mkdir $FilePath/your_answer/Subtask${subtask}
+
+        Pass_TC_Cnt=0
+        for tc_name in $(ls $FilePath/testcase/Subtask${subtask} | grep 'in$' | sed 's/.in//'); do
+            input=$FilePath/testcase/Subtask${subtask}/$tc_name.in
+            answer=$FilePath/testcase/Subtask${subtask}/$tc_name.out
+            userans=$FilePath/your_answer/Subtask${subtask}/$tc_name.out
+            echo -n "$tc_name : "
+            Execuserans=$(timeout 1 bash -c "$FilePath/hw${HW}-${subtask} < $input > $userans" 2>&1)
+            ExecReturnValue=$?
+            if (( $ExecReturnValue != 0 )); then
+                if (( $ExecReturnValue == 124 )); then
+                    echo -e "${BLUE}Time Limit Exceed${RESET}"
+                else
+                    echo -e "${RED}Runtime Error${RESET}"
+                    echo $Execuserans
+                fi
+            else
+                diff $userans $answer > /dev/null 
+                if (( $? == 1 )); then
+                    echo -e "${RED}Wrong Answer${RESET}"
+                    echo -e -n "${BLUE}Input   Data${RESET} : \n$(cat $input | head -c 50)"
+                    if (( $(cat $input | wc -m) > 50)) ; then
+                        echo "....(more)"
+                    else
+                        echo ""
+                    fi
+                    echo -e -n "\n${BLUE}Your    Answer${RESET} : \n$(cat $userans | head -c 50)"
+                    if (( $(cat $userans | wc -m) > 50)) ; then
+                        echo "....(more)"
+                    else
+                        echo ""
+                    fi
+                    echo -e -n "\n${BLUE}Correct Answer${RESET} : \n$(cat $answer | head -c 50)"
+                    if (( $(cat $answer | wc -m) > 50)) ; then
+                        echo "....(more)"
+                    else
+                        echo ""
+                    fi
+                    echo -e "Your answer : $userans"
+                    echo -e "TA's answer : $answer"
+                    
+                else
+                    echo -e "${GREEN}ACCEPT${RESET}"
+                    (( Pass_TC_Cnt++ ))
+                fi
+                
+            fi
+            echo "-----------------------------"
+        done
+
+        TC_Cnt=$(ls $FilePath/testcase/Subtask${subtask} | grep 'in$' | wc -l)
+        if (( $Pass_TC_Cnt == $TC_Cnt )); then
+            (( score += ${Score[(( $(printf "%d" "'${subtask}") - 49 ))]} ))
+        fi
+    fi
+done
+
+
+echo -e "\nTotal Score : $score/100"
+exit $score

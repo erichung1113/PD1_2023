@@ -1,0 +1,126 @@
+function hw5() {
+    RED="\033[0;31m";
+    GREEN="\033[0;32m";
+    YELLOW="\033[0;33m";
+    MAGENTA="\033[0;35m";
+    CYAN="\033[0;36m";
+    WHITE="\033[0;37m";
+    GRAY="\033[0;90m";
+    NC="\033[0m";
+
+    SHOW_DETAIL=0;
+    SELECT_SUBTASK=0;
+    SCORE=0;
+    SELECT_PATH=""
+    function __t() {
+        echo -e "=============${MAGENTA}Subtask - $1${NC}=============";
+        TESTCASE=$(cat /share/HW5/Subtask${1}_input);
+        ans=$(cat /share/HW5/Subtask${1}_output);
+        COMMAND='echo -e "$(cat /share/HW5/Subtask'$1'_input)" | '$3;
+        out=$(timeout 1 bash -c "${COMMAND}");
+        RETURN_CODE=$?;
+
+        ans="${ans//\\/\\\\}";
+        out="${out//\\/\\\\}";
+        
+        if [ "$RETURN_CODE" == "0" ]; then
+            if [ "$2" = "1" ]; then
+                echo -e "${YELLOW}Answer:${NC}";
+                echo -e "${GRAY}=========START=========${NC}";
+                echo -e "$ans";
+                echo -e "${GRAY}==========END==========\n${NC}";
+                echo -e "${YELLOW}Your Answer:${NC}";
+                echo -e "${GRAY}=========START=========${NC}";
+                echo -e "$out";
+                echo -e "${GRAY}==========END==========\n${NC}";
+            fi
+
+            if [ "$ans" = "$out" ]; then
+                __addScore $1;
+                status="${GREEN}Answer Correct${NC}";
+            else
+                status="${RED}Wrong Answer${NC}";
+            fi
+        else
+            if [ "$RETURN_CODE" == "124" ]; then
+                status="${CYAN}Time Limit Exceed${NC}";
+            else
+                status="${CYAN}Runtime Error, Return ${RETURN_CODE}${NC}";
+            fi
+        fi
+        echo -e "${YELLOW}Status:${NC} $status";
+        echo "";
+    }
+    function __addScore() {
+        case "$1" in
+        "1" )
+        SCORE=$(($SCORE+5));
+        ;;
+        "2" )
+        SCORE=$(($SCORE+10));
+        ;;
+        "3" )
+        SCORE=$(($SCORE+40));
+        ;;
+        "4" )
+        SCORE=$(($SCORE+45));
+        ;;
+        esac
+    }
+
+    while test $# -gt 0
+    do
+        case "$1" in
+        "-d" )
+        SHOW_DETAIL=1;
+        ;;
+        "-n" )
+        shift;
+        SELECT_SUBTASK=$1;
+        ;;
+        "-p" )
+        shift;
+        SELECT_PATH=$1;
+        ;;
+        esac
+        shift;
+    done
+
+    if [ "$SELECT_PATH" = "" ]; then
+        SELECT_PATH="~/HW5/hw5";
+    fi
+    if [[ -d $SELECT_PATH ]]; then
+        SELECT_PATH=$SELECT_PATH/hw5;
+    fi
+    echo $SELECT_PATH;
+
+    if [[ -f $SELECT_PATH.c ]]; then
+        gcc -o $SELECT_PATH $SELECT_PATH.c;
+        if (( $? != 0 )); then
+            echo -e "Result: ${YELLOW}Compilation Error${NC}";
+        else
+            if [ "$SELECT_SUBTASK" = "0" ]; then
+                for i in {1..4}; do
+                    __t $i $SHOW_DETAIL $SELECT_PATH;
+                done
+                echo -e "${YWLLOW}Score${NC}: ${SCORE}/100";
+                RETURN_VALUE=$SCORE;
+            else
+                __t $SELECT_SUBTASK $SHOW_DETAIL $SELECT_PATH;
+                RETURN_VALUE=0;
+            fi
+        fi
+    else
+        echo -e "Result: ${YELLOW}File Not Found${NC}";
+    fi
+
+    echo "";
+    echo "Use \"hw5 -d\" to show detail.";
+    echo "Use \"hw5 -n <subtask>\" to test special subtask.";
+    echo "Score only visible when subtask is unset.";
+
+    return $RETURN_VALUE;
+}
+
+hw5 $*;
+

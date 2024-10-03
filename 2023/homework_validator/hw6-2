@@ -1,0 +1,141 @@
+function hw6() {
+    RED="\033[0;31m";
+    GREEN="\033[0;32m";
+    YELLOW="\033[0;33m";
+    MAGENTA="\033[0;35m";
+    CYAN="\033[0;36m";
+    WHITE="\033[0;37m";
+    GRAY="\033[0;90m";
+    NC="\033[0m";
+
+    SCORE=0;                 # 分數
+    SHOW_DETAIL=0;           # 是否顯示詳細輸出
+    SELECT_SUBTASK=0;        # 所選的子任務
+    SELECT_PATH=~/HW6/hw6.c; # 原始檔
+    EXEC_PATH="";            # 執行檔
+    TESTCASE_DIR=/share/HW6; # 測資資料夾
+
+    TESTCASE_NAME="";        # 子任務名稱
+
+    FUNC_RETURN=0;
+    function __t() {
+        FUNC_RETURN=1;
+        echo -e "=============${MAGENTA}${TESTCASE_NAME}${NC}=============";
+        ANSWER=$(cat ${TESTCASE_DIR}/${TESTCASE_NAME}_output);
+        OUTPUT=$(timeout 1 bash -c "${EXEC_PATH} < ${TESTCASE_DIR}/${TESTCASE_NAME}_input");
+        RETURN_CODE=$?;
+
+        ANSWER="${ANSWER//\\/\\\\}";
+        OUTPUT="${OUTPUT//\\/\\\\}";
+
+        if [ "$RETURN_CODE" == "0" ]; then
+            if [ "$SHOW_DETAIL" = "1" ]; then
+                echo -e "${YELLOW}Answer:${NC}";
+                echo -e "${GRAY}=========START=========${NC}";
+                echo -e "${ANSWER}";
+                echo -e "${GRAY}==========END==========${NC}\n";
+                echo -e "${YELLOW}Your Answer:${NC}";
+                echo -e "${GRAY}=========START=========${NC}";
+                echo -e "${OUTPUT}";
+                echo -e "${GRAY}==========END==========${NC}\n";
+            fi
+
+            if [ "$ANSWER" = "$OUTPUT" ]; then
+                SCORE=$(($SCORE+$1))
+                STATUS="${GREEN}Answer Correct${NC}";
+                FUNC_RETURN=0;
+            else
+                STATUS="${RED}Wrong Answer${NC}";
+            fi
+        else
+            if [ "$RETURN_CODE" == "124" ]; then
+                STATUS="${CYAN}Time Limit Exceed${NC}";
+            else
+                STATUS="${CYAN}Runtime Error, Return ${RETURN_CODE}${NC}";
+            fi
+        fi
+        echo -e "${YELLOW}Status:${NC} ${STATUS}";
+        if [[ $FUNC_RETURN = 0 ]]; then
+            echo "";
+        else
+            echo -e "${YELLOW}Info:   ${RED}Break at error for saving resource.${NC}\n"
+        fi
+        return $FUNC_RETURN;
+    }
+
+    while test $# -gt 0
+    do
+        case "$1" in
+            "-d" )
+            SHOW_DETAIL=1;
+            ;;
+            "-n" )
+            shift;
+            SELECT_SUBTASK=$1;
+            ;;
+            "-p" )
+            shift;
+            SELECT_PATH=$1;
+            ;;
+            "-t" )
+            shift;
+            TESTCASE_DIR=$1;
+            ;;
+        esac
+        shift;
+    done
+
+    EXEC_PATH=${SELECT_PATH//'.c'/''};
+
+    if [[ -f $SELECT_PATH ]]; then
+        gcc -o $EXEC_PATH $SELECT_PATH;
+        if (( $? != 0 )); then
+            echo -e "Result: ${YELLOW}Compilation Error${NC}";
+        else
+            if [ "$SELECT_SUBTASK" = "0" ]; then
+                for i in {1..4}; do
+                    FUNC_RETURN=0;
+                    TESTCASE_NAME="Subtask${i}_1";
+                    __t 2;
+                    if [[ $FUNC_RETURN = 0 ]]; then
+                        TESTCASE_NAME="Subtask${i}_2";
+                        __t 4;
+                    fi
+                    if [[ $FUNC_RETURN = 0 ]]; then
+                        TESTCASE_NAME="Subtask${i}_3";
+                        __t 9;
+                    fi
+                done
+                echo -e "${YWLLOW}Score${NC}: ${SCORE}/60";
+                RETURN_VALUE=$SCORE;
+            else
+                FUNC_RETURN=0;
+                TESTCASE_NAME="Subtask${SELECT_SUBTASK}_1";
+                __t 0;
+                if [[ $FUNC_RETURN = 0 ]]; then
+                    TESTCASE_NAME="Subtask${SELECT_SUBTASK}_2";
+                    __t 0;
+                fi
+                if [[ $FUNC_RETURN = 0 ]]; then
+                    TESTCASE_NAME="Subtask${SELECT_SUBTASK}_3";
+                    __t 0;
+                fi
+                RETURN_VALUE=0;
+            fi
+        fi
+    else
+        echo -e "Result: ${YELLOW}File Not Found${NC}";
+    fi
+
+    echo "";
+    echo "Use \"hw6 -d\" to show detail.";
+    echo "Use \"hw6 -n <subtask>\" to test special subtask.";
+    echo "Use \"hw6 -p <c file path>\" to test special file.";
+    echo "Use \"hw6 -t <subtask dir>\" to load testcase from special dir.";
+    echo "Score only visible when subtask is unset.";
+
+    return $RETURN_VALUE;
+}
+
+hw6 $*;
+
