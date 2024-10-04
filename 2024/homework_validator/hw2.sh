@@ -13,7 +13,6 @@ BLUE='\033[0;36m'
 ORANGE='\033[40m'
 RESET='\033[0m'
 
-
 if [[ $(basename $(pwd)) == "HW${HW}" ]]; then
     FilePath=$(pwd)
 else
@@ -31,12 +30,8 @@ while (( $# != 0 )); do
 done
 if [[ $todo != "" ]]; then Subtask=$todo; fi
 
-if test -d $FilePath/result ; then rm -r $FilePath/result; fi
-mkdir $FilePath/result
-
-
-score=0
 echo -e "=> Using Path : $FilePath"
+cd $FilePath
 
 check_answer() {
     local userans=$1
@@ -73,7 +68,7 @@ check_answer() {
         fi
         echo -e "\nInput Data : $input"
         echo -e "Correct answer : $answer"
-        echo -e "Your answer : $userans"
+        echo -e "Your answer : $FilePath/$userans"
         
         All_Pass="false"
         output="true"
@@ -84,23 +79,27 @@ check_answer() {
     fi
 }
 
+if test -d result ; then rm -r result; fi
+mkdir result
+
+score=0
 for subtask in $Subtask; do
     echo -e "${YELLOW}Testing p${subtask} ...${RESET}"
 
-    if test -f $FilePath/p${subtask} ; then rm $FilePath/p${subtask}; fi
+    if test -f p${subtask} ; then rm p${subtask}; fi
     
-    CompileResult=$(gcc $FilePath/p${subtask}.c -o $FilePath/p${subtask} 2>&1)
+    CompileResult=$(gcc p${subtask}.c -o p${subtask} 2>&1)
     CompileReturnValue=$?
 
     if (( CompileReturnValue != 0 )); then
-        if ! test -f $FilePath/p${subtask}.c; then
+        if ! test -f p${subtask}.c; then
             echo -e "${RED}File p${subtask}.c not found.${RESET}"
         else
             echo -e "${YELLOW}Compilation Error${RESET}"
             echo $CompileResult
         fi
     else
-        mkdir $FilePath/result/p${subtask}
+        mkdir result/p${subtask}
 
         All_Pass="true"
         for tc_name in $(ls /share/HW${HW}_TC/p${subtask} | grep 'in$' | sed 's/.in//'); do
@@ -108,12 +107,11 @@ for subtask in $Subtask; do
 
             Input=/share/HW${HW}_TC/p${subtask}/$tc_name.in
             Answer=/share/HW${HW}_TC/p${subtask}/$tc_name.out
-            Userans=$FilePath/result/p${subtask}/$tc_name.out
+            Userans=result/p${subtask}/$tc_name.out
             argv=/share/HW${HW}_TC/p${subtask}/$tc_name.argv
-
+            
             echo -n "Test Case $tc_name : "
-
-            ExecuteCommand="$FilePath/p${subtask}"
+            ExecuteCommand="./p${subtask}"
             if test -f $argv ; then ExecuteCommand="$ExecuteCommand $(cat $argv)"; fi
             echo $ExecuteCommand
 
@@ -130,16 +128,16 @@ for subtask in $Subtask; do
                 All_Pass="false"
             else
                 if [[ "$subtask" == "B" ]]; then 
-                    check_answer $FilePath/answer.txt $Answer $Input
+                    check_answer answer.txt $Answer $Input
                 elif [[ "$subtask" == "C" ]]; then
                     output="false"
                     check_answer $Userans $Answer $Input
                     if [[ "$tc_name" == "1" ]]; then 
-                        check_answer $FilePath/output01.txt /share/HW${HW}_TC/p${subtask}/output01.txt $Input
-                        check_answer $FilePath/banana.txt /share/HW${HW}_TC/p${subtask}/banana.txt $Input
+                        check_answer output01.txt /share/HW${HW}_TC/p${subtask}/output01.txt $Input
+                        check_answer banana.txt /share/HW${HW}_TC/p${subtask}/banana.txt $Input
                     else
-                        check_answer $FilePath/output02.txt /share/HW${HW}_TC/p${subtask}/output02.txt $Input
-                        check_answer $FilePath/output03.txt /share/HW${HW}_TC/p${subtask}/output03.txt $Input
+                        check_answer output02.txt /share/HW${HW}_TC/p${subtask}/output02.txt $Input
+                        check_answer output03.txt /share/HW${HW}_TC/p${subtask}/output03.txt $Input
                     fi
 
                     if [ "$output" = "false" ] ; then
