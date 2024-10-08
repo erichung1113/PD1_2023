@@ -66,6 +66,10 @@ check_answer() {
         else
             echo ""
         fi
+
+        echo -e -n "\n${BLUE}Compare${RESET} : \n"
+        diff $answer $FilePath/$userans
+        
         echo -e "\nInput Data : $input"
         echo -e "Correct answer : $answer"
         echo -e "Your answer : $FilePath/$userans"
@@ -161,4 +165,3 @@ done
 
 echo -e "\nTotal Score : $score/100"
 exit $score
-
