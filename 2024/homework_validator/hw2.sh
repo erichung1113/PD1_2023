@@ -31,6 +31,11 @@ done
 if [[ $todo != "" ]]; then Subtask=$todo; fi
 
 echo -e "=> Using Path : $FilePath"
+if ! test -d $FilePath ; then 
+    echo -e "${RED}Can not find directory${RESET}" 
+    exit 0
+fi
+
 cd $FilePath
 
 check_answer() {
