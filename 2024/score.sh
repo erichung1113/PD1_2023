@@ -53,7 +53,7 @@ for student_id in $students_id; do
 done
 
 chown -R cial1:cial1 /home/cial1/Judge
-chown cial1:cial1 /home/cial1/$score_file
+chown cial1:cial1 $score_file
 echo -e "\nfinished judge\n"
 
 # if (( $# == 0 )); then /home/cial1/Moss/moss.sh; fi
