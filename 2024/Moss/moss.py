@@ -1,8 +1,12 @@
-import mosspy
+import mosspy, sys
 userid = 61861013
 
-m = mosspy.Moss(userid, "python")
-m.addFilesByWildcard("/home/cial1/Moss/Submissions/*")
+for i in range(1, len(sys.argv)):
+    problem = sys.argv[i]
+    print("Uploading " + problem + " ......")
+    
+    m = mosspy.Moss(userid, "python")
+    m.addFilesByWildcard(f"Submissions/${problem}/*")
 
-url = m.send()
-print (url)
+    url = m.send()
+    print (url)
