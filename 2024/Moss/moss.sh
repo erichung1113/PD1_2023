@@ -1,5 +1,4 @@
-#HW=$(ls /usr/local/bin | grep -oP '^hw\K[0-9]+' | sort -n | tail -1)
-HW=3
+HW=$(ls /usr/local/bin | grep -oP '^hw\K[0-9]+' | sort -n | tail -1)
 
 function upload_to_Moss {
     FILE=$1
