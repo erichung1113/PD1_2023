@@ -1,4 +1,5 @@
 HW=$(ls /usr/local/bin | grep -oP '^hw\K[0-9]+' | sort -n | tail -1)
+HW=3
 
 function get_submissions {
     FILE=$1
@@ -22,6 +23,7 @@ problem=$(ls /share/HW${HW}_TC)
 for p in $problem; do
 	get_submissions $p
 done
+chown -R cial1:cial1 $Submission_Dir
 
 cd /home/cial1/Moss
-python3 /home/cial1/Moss/moss.py $problem
+python3 moss.py $problem
