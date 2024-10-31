@@ -1,6 +1,5 @@
 #! /bin/bash
-# HW=$(ls /usr/local/bin | grep -oP '^hw\K[0-9]+' | sort -n | tail -1)
-HW=3
+HW=$(ls /usr/local/bin | grep -oP '^hw\K[0-9]+' | sort -n | tail -1)
 
 students_id=$(cat /home/cial1/all_students_id.txt)
 
@@ -11,7 +10,7 @@ if [[ $(whoami) == "root" ]]; then
     mkdir /home/cial1/Submission_BackUp
 
     for student_id in $students_id; do
-        if test -d /home/$student_id/HW$HW; then
+        if test -d /home/$student_id/HW$HW; then 
             echo "copying $student_id"
 
             BackUpFolder=/home/cial1/Submission_BackUp/$student_id
@@ -42,12 +41,12 @@ for student_id in $students_id; do
     if [[ -d ${StudentFolder} && $(find "$StudentFolder" -type f | wc -l) -gt 0 ]]; then
         JudgeFolder="/home/cial1/Judge/$student_id"
         mkdir $JudgeFolder
-        cd $JudgeFolder
+		cd $JudgeFolder
 
         cp -r $StudentFolder/* $JudgeFolder
-        hw$HW -p $JudgeFolder > /dev/null 2>&1
+        hw$HW -p $JudgeFolder > $JudgeFolder/judge_output 2>&1
         score=$?
-        echo "$student_id, $score"
+    	echo "$student_id, $score"
     fi
     echo "$student_id, $score" >> $score_file
 done
@@ -56,4 +55,5 @@ chown -R cial1:cial1 /home/cial1/Judge
 chown cial1:cial1 $score_file
 echo -e "\nfinished judge\n"
 
-# if (( $# == 0 )); then /home/cial1/Moss/moss.sh; fi
+# -------------check plagiarism-------------
+if (( $# == 0 )); then /home/cial1/Moss/moss.sh; fi
