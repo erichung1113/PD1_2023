@@ -9,4 +9,4 @@ for i in range(1, len(sys.argv)):
     m.addFilesByWildcard(f"Submissions/${problem}/*")
 
     url = m.send()
-    print (url)
+    print (url
