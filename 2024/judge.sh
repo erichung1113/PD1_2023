@@ -1,5 +1,6 @@
 #! /bin/bash
 HW=$(ls /usr/local/bin | grep -oP '^hw\K[0-9]+' | sort -n | tail -1)
+HW=3
 
 students_id=$(cat /home/cial1/all_students_id.txt)
 
@@ -55,5 +56,4 @@ chown -R cial1:cial1 /home/cial1/Judge
 chown cial1:cial1 $score_file
 echo -e "\nfinished judge\n"
 
-# -------------check plagiarism-------------
 if (( $# == 0 )); then /home/cial1/Moss/moss.sh; fi
