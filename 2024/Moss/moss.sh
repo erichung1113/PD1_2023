@@ -1,6 +1,6 @@
 HW=$(ls /usr/local/bin | grep -oP '^hw\K[0-9]+' | sort -n | tail -1)
 
-function upload_to_Moss {
+function get_submissions {
     FILE=$1
 
 	File_Dir=$Submission_Dir/$FILE
@@ -20,10 +20,8 @@ mkdir $Submission_Dir
 
 problem=$(ls /share/HW${HW}_TC)
 for p in $problem; do
-	upload_to_Moss $p
+	get_submissions $p
 done
 
 cd /home/cial1/Moss
-result=$(python3 /home/cial1/Moss/moss.py $problem)
-echo $result
-echo $result >> /home/cial1/Moss/plagiarism_result
+python3 /home/cial1/Moss/moss.py $problem
