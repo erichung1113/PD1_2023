@@ -43,7 +43,7 @@ check_answer() {
     local answer=$2
     local input=$3
 
-    diff $userans $answer > /dev/null
+    diff -Z $userans $answer > /dev/null
     if (( $? == 1 )); then
         output+="${RED}Wrong Answer${RESET}\n"
         output+="${BLUE}Input   Data${RESET} : \n$(cat $input | head -c 50)"
