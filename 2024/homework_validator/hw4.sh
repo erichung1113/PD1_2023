@@ -30,8 +30,13 @@ while (( $# != 0 )); do
 done
 if [[ $todo != "" ]]; then Subtask=$todo; fi
 
-echo -e "=> Using Path : $FilePath"
-cd $FilePath
+if test -d $FilePath ; then 
+    echo -e "=> Using Path : $FilePath"
+    cd $FilePath
+else
+    echo -e "${RED}Can not find path: ${FilePath}${RESET}"
+    exit 0
+fi
 
 check_answer() {
     local userans=$1
@@ -61,7 +66,7 @@ check_answer() {
         fi
 
         output+="\n${BLUE}Difference${RESET} : \n"
-        output+=$(diff $answer $FilePath/$userans)
+        output+=$(diff $answer $userans)
 
         output+="\n\nInput Data : $input\n"
         output+="Correct answer : $answer\n"
@@ -83,7 +88,7 @@ score=0
 for subtask in $Subtask; do
     if test -f p${subtask} ; then rm p${subtask}; fi
     
-    CompileResult=$(gcc p${subtask}.c -o ${FilePath}/bin/p${subtask} 2>&1)
+    CompileResult=$(gcc p${subtask}.c -o bin/p${subtask} -lm 2>&1)
     CompileReturnValue=$?
 
     output=""
@@ -108,7 +113,7 @@ for subtask in $Subtask; do
             Userans=result/p${subtask}/$tc_name.out
             argv=/share/HW${HW}_TC/p${subtask}/$tc_name.argv
             
-            ExecuteCommand="${FilePath}/bin/p${subtask}"
+            ExecuteCommand="bin/p${subtask}"
             if test -f $argv ; then ExecuteCommand="$ExecuteCommand $(cat $argv)"; fi
             # output+="$ExecuteCommand\n"
 
