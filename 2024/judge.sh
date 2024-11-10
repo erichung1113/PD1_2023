@@ -1,6 +1,5 @@
 #! /bin/bash
 HW=$(ls /usr/local/bin | grep -oP '^hw\K[0-9]+' | sort -n | tail -1)
-HW=3
 
 students_id=$(cat /home/cial1/all_students_id.txt)
 
