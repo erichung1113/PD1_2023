@@ -1,5 +1,4 @@
 HW=$(ls /usr/local/bin | grep -oP '^hw\K[0-9]+' | sort -n | tail -1)
-HW=3
 
 function get_submissions {
     FILE=$1
